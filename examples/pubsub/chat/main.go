@@ -46,11 +46,11 @@ func main() {
 	}
 
 	// use the nickname from the cli flag, or a default if blank
-	nick := *nickFlag
-	if len(nick) == 0 {
-		nick = defaultNick(h.ID())
+	nick := ""
+	if len(nick) != 0 {
+		nick += *nickFlag + "-"
 	}
-
+	nick += defaultNick(h.ID())
 	// join the room from the cli flag, or the flag default
 	room := *roomFlag
 
@@ -62,6 +62,7 @@ func main() {
 
 	// draw the UI
 	ui := NewChatUI(cr)
+	ui.displayChatMessage(&ChatMessage{Message: h.Addrs()[0].String(), SenderID: string(h.ID()), SenderNick: "Your IP"})
 	if err = ui.Run(); err != nil {
 		printErr("error running text UI: %s", err)
 	}

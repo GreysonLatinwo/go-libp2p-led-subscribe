@@ -23,6 +23,13 @@ type ChatUI struct {
 	doneCh  chan struct{}
 }
 
+// displayChatMessage writes a ChatMessage from the room to the message window,
+// with the sender's nick highlighted in green.
+func (ui *ChatUI) displayChatMessage(cm *ChatMessage) {
+	prompt := withColor("green", fmt.Sprintf("<%s>:", cm.SenderNick))
+	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, cm.Message)
+}
+
 // NewChatUI returns a new ChatUI struct that controls the text UI.
 // It won't actually do anything until you call Run().
 func NewChatUI(cr *ChatRoom) *ChatUI {
@@ -131,13 +138,6 @@ func (ui *ChatUI) refreshPeers() {
 	}
 
 	ui.app.Draw()
-}
-
-// displayChatMessage writes a ChatMessage from the room to the message window,
-// with the sender's nick highlighted in green.
-func (ui *ChatUI) displayChatMessage(cm *ChatMessage) {
-	prompt := withColor("green", fmt.Sprintf("<%s>:", cm.SenderNick))
-	fmt.Fprintf(ui.msgW, "%s %s\n", prompt, cm.Message)
 }
 
 // displaySelfMessage writes a message from ourself to the message window,

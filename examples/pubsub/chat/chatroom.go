@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"net"
 
 	"github.com/libp2p/go-libp2p-core/peer"
 
@@ -102,9 +104,20 @@ func (cr *ChatRoom) readLoop() {
 		if err != nil {
 			continue
 		}
+		go setLedColor(cm)
 		// send valid messages onto the Messages channel
 		cr.Messages <- cm
+		c, err := net.Dial("tcp", "127.0.0.1:2022")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		c.Write([]byte(cm.Message))
 	}
+}
+
+func setLedColor(cm *ChatMessage) {
+	println("setting color to ", cm.Message)
 }
 
 func topicName(roomName string) string {
