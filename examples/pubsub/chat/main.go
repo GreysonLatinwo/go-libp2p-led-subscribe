@@ -55,17 +55,21 @@ func main() {
 	room := *roomFlag
 
 	// join the chat room
-	cr, err := JoinChatRoom(ctx, ps, h.ID(), nick, room)
+	_, err = JoinChatRoom(ctx, ps, h.ID(), nick, room)
 	if err != nil {
 		panic(err)
 	}
 
 	// draw the UI
-	ui := NewChatUI(cr)
-	ui.displayChatMessage(&ChatMessage{Message: h.Addrs()[0].String(), SenderID: string(h.ID()), SenderNick: "Your IP"})
-	if err = ui.Run(); err != nil {
-		printErr("error running text UI: %s", err)
+	//ui := NewChatUI(cr)
+	addrs := ""
+	for _, addr := range h.Addrs() {
+		addrs += addr.String() + " "
 	}
+	//ui.displayChatMessage(&ChatMessage{Message: addrs, SenderID: string(h.ID()), SenderNick: "Your IP"})
+	//if err = ui.Run(); err != nil {
+	//	printErr("error running text UI: %s", err)
+	//}
 }
 
 // printErr is like fmt.Printf, but writes to stderr.
