@@ -11,9 +11,9 @@ bindsocket.listen(5)
 print("listening...")
 
 def clientInputLoop(sock, fromaddr):
-    #NUM_LEDS = 512
-    #BRIGHTNESS = 0.1
-    #pixels = neopixel.NeoPixel(board.D18, NUM_LEDS, brightness=BRIGHTNESS, auto_write=False)
+    NUM_LEDS = 512
+    BRIGHTNESS = 0.1
+    pixels = neopixel.NeoPixel(board.D18, NUM_LEDS, brightness=BRIGHTNESS, auto_write=False)
     def check_decimal(s) -> bool:
         try:
             float(s)
