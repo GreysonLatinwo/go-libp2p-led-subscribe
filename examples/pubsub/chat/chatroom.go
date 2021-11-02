@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"os"
 
 	"github.com/libp2p/go-libp2p-core/peer"
 
@@ -13,6 +14,8 @@ import (
 
 // ChatRoomBufSize is the number of incoming messages to buffer for each topic.
 const ChatRoomBufSize = 128
+
+const LedServerIP = "127.0.0.1:2023"
 
 // ChatRoom represents a subscription to a single PubSub topic. Messages
 // can be published to the topic with ChatRoom.Publish, and received
@@ -89,8 +92,14 @@ func (cr *ChatRoom) ListPeers() []peer.ID {
 
 // readLoop pulls messages from the pubsub topic and pushes them onto the Messages channel.
 func (cr *ChatRoom) readLoop() {
+	c, err := net.Dial("tcp", LedServerIP)
+	if err != nil {
+		// maybe start the server now in the future
+		fmt.Fprintln(os.Stderr, "Cannot connect to the LED server:", err)
+		return
+	}
+	defer c.Close()
 	for {
-		c, _ := net.Dial("tcp", "127.0.0.1:2023")
 		msg, err := cr.sub.Next(cr.ctx)
 		if err != nil {
 			close(cr.Messages)
@@ -101,18 +110,28 @@ func (cr *ChatRoom) readLoop() {
 		if err != nil {
 			continue
 		}
-		fmt.Println(cm.Message)
-		setLedColor(c, cm)
+
+		if _, err = c.Write([]byte(cm.Message)); err != nil {
+			c.Close()
+			c, err = net.Dial("tcp", LedServerIP)
+			if err != nil {
+				// maybe start the server now in the future
+				fmt.Fprintln(os.Stderr, "Cannot connect to the LED server:", err)
+				return
+			}
+			_, err = c.Write([]byte(cm.Message))
+			// we just opened this, if theres a problem now, fuck it give up...
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "Cannot connect to the LED server:", err)
+				return
+			}
+		}
 		if msg.ReceivedFrom == cr.self {
 			continue
 		}
 		// send valid messages onto the Messages channel
-		cr.Messages <- cm
+		//cr.Messages <- cm
 	}
-}
-
-func setLedColor(c net.Conn, cm *ChatMessage) {
-	c.Write([]byte(cm.Message))
 }
 
 func topicName(roomName string) string {
