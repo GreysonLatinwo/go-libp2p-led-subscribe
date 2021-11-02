@@ -1,5 +1,5 @@
-#import board
-#import neopixel
+import board
+import neopixel
 import threading
 import socket
 
@@ -43,14 +43,14 @@ def clientInputLoop(sock, fromaddr):
                 continue
             dataSplit = clientData.split(',')
             #if the brightness was sent, reset the pixel brightness
-            # if len(dataSplit) == 4:
-            #     print(pixels.brightness)
-            #     pixels.brightness = float(dataSplit[3])
+            if len(dataSplit) == 4:
+                print(pixels.brightness)
+                pixels.brightness = float(dataSplit[3])
             #set all led color
             print(fromaddr, '->',(int(dataSplit[0]), int(dataSplit[1]), int(dataSplit[2])))
-            # pixels.fill((int(dataSplit[0]), int(dataSplit[1]), int(dataSplit[2])))
+            pixels.fill((int(dataSplit[0]), int(dataSplit[1]), int(dataSplit[2])))
             # #update pixels
-            # pixels.show()
+            pixels.show()
         except:
             sock.shutdown(2)    # 0 = done receiving, 1 = done sending, 2 = both1
             sock.close()
