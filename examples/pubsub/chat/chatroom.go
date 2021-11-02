@@ -90,7 +90,7 @@ func (cr *ChatRoom) ListPeers() []peer.ID {
 // readLoop pulls messages from the pubsub topic and pushes them onto the Messages channel.
 func (cr *ChatRoom) readLoop() {
 	for {
-		//c, _ := net.Dial("tcp", "127.0.0.1:2023")
+		c, _ := net.Dial("tcp", "127.0.0.1:2023")
 		msg, err := cr.sub.Next(cr.ctx)
 		if err != nil {
 			close(cr.Messages)
@@ -102,7 +102,7 @@ func (cr *ChatRoom) readLoop() {
 			continue
 		}
 		fmt.Println(cm.Message)
-		//setLedColor(c, cm)
+		setLedColor(c, cm)
 		if msg.ReceivedFrom == cr.self {
 			continue
 		}
