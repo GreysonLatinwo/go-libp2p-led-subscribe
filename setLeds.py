@@ -1,4 +1,3 @@
-import re
 import os
 import board
 import neopixel
@@ -14,11 +13,13 @@ bindsocket.listen(5)
 print("listening...")
 
 def clientInputLoop(sock, fromaddr):
-    NUM_LEDS = int(os.environ['NUMLEDS'])
-    BRIGHTNESS = 0.1
-    t1 = None
-    stopPreset = False
-    pixels = neopixel.NeoPixel(board.D18, NUM_LEDS, brightness=BRIGHTNESS, auto_write=False)
+    def is_clean(input_data_split):
+        if len(input_data_split) != 5:
+            return False
+        for data in input_data_split[1:]:
+            if not check_decimal(data):
+                return False
+        return True
 
     def check_decimal(s) -> bool:
         try:
@@ -27,18 +28,22 @@ def clientInputLoop(sock, fromaddr):
             return False
         else:
             return True
-    
-    def preset1(stop):
+
+    def preset(preset, stop_check):
+        import colorsys
         # Declare a 6-element RGB rainbow palette
+        rgb1 = colorsys.hsv_to_rgb(preset[0], 100, 100)
+        rgb2 = colorsys.hsv_to_rgb(preset[1], 100, 100)
+        rgb3 = colorsys.hsv_to_rgb(preset[2], 100, 100)
         palette = [
-            fancy.CRGB(0.66, 0.0, 1.0),  # purple
-            fancy.CRGB(0.0, 1.0, 1.0),  # nitro blue
-            fancy.CRGB(0.0, 0.75, 0.5),  # mint green
+            fancy.CRGB(rgb1[0], rgb1[1], rgb1[2]),
+            fancy.CRGB(rgb2[0], rgb2[1], rgb2[2]),
+            fancy.CRGB(rgb3[0], rgb3[1], rgb3[2]),
         ]
 
         offset = 0  # Positional offset into color palette to get it to 'spin'
 
-        while not stop():
+        while not stop_check():
             for i in range(NUM_LEDS):
                 # Load each pixel's color from the palette using an offset, run it
                 # through the gamma function, pack RGB value and assign to pixel.
@@ -48,88 +53,62 @@ def clientInputLoop(sock, fromaddr):
             pixels.show()
 
             offset += 0.002  # Bigger number = faster spin
-        print('Preset1 Exited')
 
-    def preset2(stop):
-        # Declare a 6-element RGB rainbow palette
-        palette = [
-            fancy.CRGB(1.0, 0.0, 0.0), # red
-            fancy.CRGB(1.0, 0.0, 1.0),  # purple
-            fancy.CRGB(1.0, 0.0, 0.5), # pink
-        ]
 
-        offset = 0  # Positional offset into color palette to get it to 'spin'
-
-        while not stop():
-            for i in range(NUM_LEDS):
-                # Load each pixel's color from the palette using an offset, run it
-                # through the gamma function, pack RGB value and assign to pixel.
-                color = fancy.palette_lookup(palette, offset + i / NUM_LEDS)
-                color = fancy.gamma_adjust(color, brightness=1.0)
-                pixels[i] = color.pack()
-            pixels.show()
-
-            offset += 0.002  # Bigger number = faster spin
-        print('Preset2 Exited')
+    NUM_LEDS = int(os.environ['NUMLEDS'])
+    BRIGHTNESS = 0.1
+    stopPreset = False
+    t1 = threading.Thread(target=preset, args=([280, 180, 165], (lambda: stopPreset),))
+    t1.start()
+    pixels = neopixel.NeoPixel(board.D18, NUM_LEDS, brightness=BRIGHTNESS, auto_write=False)
 
     while True:
         try:
             #read led data from the socket
             clientData = sock.recv(24).decode('utf-8').strip() #expected format: 'R,G,B[,Brightness]'
-            
             if clientData == '':
                 break
-
-            #check if the input is clean
-            is_clean = True
-            match = re.fullmatch("preset\d", clientData)
-            #if the client is setting the preset otherwise check rgb color
-            if match and clientData in dir():
-                is_clean = True 
-            else:
-                if clientData.count(',') < 2:
-                    is_clean = False
-                dataSplit = clientData.split(',')
-                if not check_decimal(dataSplit[0]) or not check_decimal(dataSplit[1]) or not check_decimal(dataSplit[2]):
-                    is_clean = False
-                if len(dataSplit) == 4 and not check_decimal(dataSplit[3]):
-                    is_clean = False
-            if not is_clean:
+            if clientData == 'ping':
+                sock.send(b'pong')
+            dataSplit = clientData.split(',')
+            #check if data is clean with no attempt to sanitize
+            if not is_clean(dataSplit):
                 print('ignoring:', clientData)
                 continue
 
+            #set brightness
+            if pixels.brightness != float(dataSplit[4]):
+                pixels.brightness = float(dataSplit[4])
+                print("Brighness="+str(pixels.brightness))
+            #if the preset is running then stop it
             if t1 and t1.is_alive:
-                    stopPreset = True
-                    t1.join()
-            if match:
+                stopPreset = True
+                t1.join()
+            if dataSplit[0] == 'preset':
                 stopPreset = False
-                if match.string == "preset1":
-                    t1 = threading.Thread(target=preset1, args=((lambda: stopPreset),))
-                    t1.start()
-                elif match.string == "preset2":
-                    t1 = threading.Thread(target=preset2, args=((lambda: stopPreset),))
-                    t1.start()
-            else:
-                dataSplit = clientData.split(',')
-                #if the brightness was sent, reset the pixel brightness
-                if len(dataSplit) == 4:
-                    pixels.brightness = float(dataSplit[3])
-                    print("Brighness="+str(pixels.brightness))
-                #set all led color
-                
+                t1 = threading.Thread(target=preset, args=(dataSplit[1:-1], (lambda: stopPreset),))
+                t1.start()
+            elif dataSplit[0] == 'static':
                 pixels.fill((int(dataSplit[0]), int(dataSplit[1]), int(dataSplit[2])))
-                #update pixels
                 pixels.show()
             print(fromaddr, '->', clientData)
         except Exception as e:
-            sock.shutdown(2)    # 0 = done receiving, 1 = done sending, 2 = both1
-            sock.close()
+            if t1 and t1.is_alive:
+                stopPreset = True
+                t1.join()
             # connection error event here, maybe reconnect
             print('Error:', e, type(e))
             return
         except ConnectionResetError as eConn:
+            sock.shutdown(2)    # 0 = done receiving, 1 = done sending, 2 = both
+            sock.close()
             print('ConnectionResetError:', eConn)
             return
+    if t1 and t1.is_alive:
+        stopPreset = True
+        t1.join()
+    sock.shutdown(2)
+    sock.close()
 
 while True:
     newsocket, fromaddr = bindsocket.accept()
