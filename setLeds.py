@@ -54,7 +54,6 @@ def clientInputLoop(sock, fromaddr):
 
             offset += 0.002  # Bigger number = faster spin
 
-    global logfile
     NUM_LEDS = int(os.environ['NUMLEDS'])
     BRIGHTNESS = 0.1
     pixels = neopixel.NeoPixel(board.D18, NUM_LEDS, brightness=BRIGHTNESS, auto_write=False)
@@ -91,7 +90,7 @@ def clientInputLoop(sock, fromaddr):
             elif dataSplit[0] == 'static':
                 pixels.fill((int(dataSplit[1]), int(dataSplit[2]), int(dataSplit[3])))
                 pixels.show()
-            print(fromaddr+' -> '+clientData)
+            print(fromaddr,'->',clientData)
             logfile = open("setLeds.log", "a")
             logfile.write(str(fromaddr)+' -> '+str(clientData)+'\n')
             logfile.close()
