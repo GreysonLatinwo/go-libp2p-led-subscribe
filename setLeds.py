@@ -97,11 +97,11 @@ def clientInputLoop(sock, fromaddr):
             if not is_clean:
                 print('ignoring:', clientData)
                 continue
-            
-            if match:
-                if t1 and t1.is_alive:
+
+            if t1 and t1.is_alive:
                     stopPreset = True
                     t1.join()
+            if match:
                 stopPreset = False
                 if match.string == "preset1":
                     t1 = threading.Thread(target=preset1, args=((lambda: stopPreset),))
