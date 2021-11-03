@@ -78,7 +78,7 @@ def clientInputLoop(sock, fromaddr):
 
             #set brightness
             if pixels.brightness != float(dataSplit[4]):
-                pixels.brightness = float(dataSplit[4])
+                pixels.brightness = int(dataSplit[4])/100
                 print("Brighness="+str(pixels.brightness))
             #if the preset is running then stop it
             if t1 and t1.is_alive:
@@ -89,7 +89,7 @@ def clientInputLoop(sock, fromaddr):
                 t1 = threading.Thread(target=preset, args=(dataSplit[1:-1], (lambda: stopPreset),))
                 t1.start()
             elif dataSplit[0] == 'static':
-                pixels.fill((int(dataSplit[0]), int(dataSplit[1]), int(dataSplit[2])))
+                pixels.fill((int(dataSplit[1]), int(dataSplit[2]), int(dataSplit[3])))
                 pixels.show()
             print(fromaddr, '->', clientData)
         except Exception as e:
