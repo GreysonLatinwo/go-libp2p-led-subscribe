@@ -12,8 +12,6 @@ bindsocket.bind(('', PORT))
 bindsocket.listen(5)
 print("listening...")
 
-logfile = open("setLeds.log", "a") 
-
 def clientInputLoop(sock, fromaddr):
     def is_clean(input_data_split):
         if len(input_data_split) != 5:
@@ -94,7 +92,9 @@ def clientInputLoop(sock, fromaddr):
                 pixels.fill((int(dataSplit[1]), int(dataSplit[2]), int(dataSplit[3])))
                 pixels.show()
             print(fromaddr+' -> '+clientData)
-            logfile.write(fromaddr+' -> '+clientData+"\n")
+            logfile = open("setLeds.log", "a")
+            logfile.write(str(fromaddr)+' -> '+str(clientData)+'\n')
+            logfile.close()
 
         except Exception as e:
             if t1 and t1.is_alive:
