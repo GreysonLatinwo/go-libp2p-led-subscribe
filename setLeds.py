@@ -30,11 +30,13 @@ def clientInputLoop(sock, fromaddr):
             return True
 
     def preset(preset, stop_check):
+        print('preset:',preset)
         import colorsys
         # Declare a 6-element RGB rainbow palette
-        rgb1 = colorsys.hsv_to_rgb(preset[0], 100, 100)
-        rgb2 = colorsys.hsv_to_rgb(preset[1], 100, 100)
-        rgb3 = colorsys.hsv_to_rgb(preset[2], 100, 100)
+        rgb1 = colorsys.hsv_to_rgb(preset[0]/360, 1.0, 1.0)
+        rgb2 = colorsys.hsv_to_rgb(preset[1]/360, 1.0, 1.0)
+        rgb3 = colorsys.hsv_to_rgb(preset[2]/360, 1.0, 1.0)
+        print('rgbs:', rgb1, rgb2, rgb3)
         palette = [
             fancy.CRGB(rgb1[0], rgb1[1], rgb1[2]),
             fancy.CRGB(rgb2[0], rgb2[1], rgb2[2]),
