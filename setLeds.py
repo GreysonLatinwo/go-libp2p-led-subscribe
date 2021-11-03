@@ -12,6 +12,8 @@ bindsocket.bind(('', PORT))
 bindsocket.listen(5)
 print("listening...")
 
+logfile = open("setLeds.log", "a") 
+
 def clientInputLoop(sock, fromaddr):
     def is_clean(input_data_split):
         if len(input_data_split) != 5:
@@ -54,7 +56,7 @@ def clientInputLoop(sock, fromaddr):
 
             offset += 0.002  # Bigger number = faster spin
 
-
+    global logfile
     NUM_LEDS = int(os.environ['NUMLEDS'])
     BRIGHTNESS = 0.1
     pixels = neopixel.NeoPixel(board.D18, NUM_LEDS, brightness=BRIGHTNESS, auto_write=False)
@@ -91,7 +93,9 @@ def clientInputLoop(sock, fromaddr):
             elif dataSplit[0] == 'static':
                 pixels.fill((int(dataSplit[1]), int(dataSplit[2]), int(dataSplit[3])))
                 pixels.show()
-            print(fromaddr, '->', clientData)
+            print(fromaddr+' -> '+clientData)
+            logfile.write(fromaddr+' -> '+clientData+"\n")
+
         except Exception as e:
             if t1 and t1.is_alive:
                 stopPreset = True
@@ -109,6 +113,7 @@ def clientInputLoop(sock, fromaddr):
         t1.join()
     sock.shutdown(2)
     sock.close()
+    
 
 while True:
     newsocket, fromaddr = bindsocket.accept()
