@@ -115,6 +115,10 @@ def clientInputLoop(sock, fromaddr):
     sock.shutdown(2)
     sock.close()
     
+from datetime import datetime
+logfile = open("setLeds.log", "w")
+logfile.write(str(datetime.now()))
+logfile.close()
 
 while True:
     newsocket, fromaddr = bindsocket.accept()
