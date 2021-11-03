@@ -57,10 +57,10 @@ def clientInputLoop(sock, fromaddr):
 
     NUM_LEDS = int(os.environ['NUMLEDS'])
     BRIGHTNESS = 0.1
+    pixels = neopixel.NeoPixel(board.D18, NUM_LEDS, brightness=BRIGHTNESS, auto_write=False)
     stopPreset = False
     t1 = threading.Thread(target=preset, args=([280, 180, 165], (lambda: stopPreset),))
     t1.start()
-    pixels = neopixel.NeoPixel(board.D18, NUM_LEDS, brightness=BRIGHTNESS, auto_write=False)
 
     while True:
         try:
