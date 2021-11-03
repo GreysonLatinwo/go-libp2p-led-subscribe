@@ -53,8 +53,10 @@ def clientInputLoop(sock, fromaddr):
             pixels.show()
 
             offset += 0.002  # Bigger number = faster spin
-
-    NUM_LEDS = int(os.environ['NUMLEDS'])
+    
+    ledconffile = open("/home/pi/.LedConsts.conf", "r")
+    NUM_LEDS = int(ledconffile.read())
+    ledconffile.close()
     BRIGHTNESS = 0.1
     pixels = neopixel.NeoPixel(board.D18, NUM_LEDS, brightness=BRIGHTNESS, auto_write=False)
     stopPreset = False
