@@ -66,11 +66,9 @@ def clientInputLoop(sock, fromaddr):
     while True:
         try:
             #read led data from the socket
-            clientData = sock.recv(24).decode('utf-8').strip() #expected format: 'R,G,B[,Brightness]'
+            clientData = sock.recv(24).decode('utf-8').strip() #expected format: 'type,R,G,B,Brightness'
             if clientData == '':
                 break
-            if clientData == 'ping':
-                sock.send(b'pong')
             dataSplit = clientData.split(',')
             #check if data is clean with no attempt to sanitize
             if not is_clean(dataSplit):
@@ -78,8 +76,8 @@ def clientInputLoop(sock, fromaddr):
                 continue
 
             #set brightness
-            if pixels.brightness != float(dataSplit[4])/100:
-                pixels.brightness = float(dataSplit[4])/100
+            if pixels.brightness != float(dataSplit[4])/max(100, NUM_LEDS):
+                pixels.brightness = float(dataSplit[4])/max(100, NUM_LEDS)
                 print("Brighness="+str(pixels.brightness))
             #if the preset is running then stop it
             if t1 and t1.is_alive:
