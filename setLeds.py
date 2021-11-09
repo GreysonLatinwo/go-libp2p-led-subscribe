@@ -76,8 +76,8 @@ def clientInputLoop(sock, fromaddr):
                 continue
 
             #set brightness
-            if pixels.brightness != float(dataSplit[4])/max(100, NUM_LEDS):
-                pixels.brightness = float(dataSplit[4])/max(100, NUM_LEDS)
+            if pixels.brightness != float(dataSplit[4])/(max(100, NUM_LEDS)*1.33):
+                pixels.brightness = float(dataSplit[4])/(max(100, NUM_LEDS)*1.33)
                 print("Brighness="+str(pixels.brightness))
             #if the preset is running then stop it
             if t1 and t1.is_alive:
