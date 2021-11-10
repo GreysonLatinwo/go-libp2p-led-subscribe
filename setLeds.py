@@ -117,7 +117,7 @@ def clientInputLoop(sock, fromaddr):
     
 from datetime import datetime
 logfile = open("setLeds.log", "a")
-logfile.write(str(datetime.now()))
+logfile.write(str(datetime.now())+'\n')
 logfile.close()
 
 while True:
