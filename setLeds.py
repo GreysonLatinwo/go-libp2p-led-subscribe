@@ -1,7 +1,7 @@
-import os
-import board
-import neopixel
-import adafruit_fancyled.adafruit_fancyled as fancy
+import json
+# import board
+# import neopixel
+# import adafruit_fancyled.adafruit_fancyled as fancy
 import threading
 import socket
 
@@ -54,11 +54,13 @@ def clientInputLoop(sock, fromaddr):
 
             offset += 0.002  # Bigger number = faster spin
     
-    ledconffile = open("/home/pi/.LedConsts.conf", "r")
-    NUM_LEDS = int(ledconffile.read())
+    ledconffile = open(".LedConsts.conf", "r")
+    ledconfjson = json.loads(ledconffile.read())
+    NUMLEDS = int(ledconfjson['NUMLEDS'])
+    HOSTNAME = str(ledconfjson['HOSTNAME'])
     ledconffile.close()
     BRIGHTNESS = 0.1
-    pixels = neopixel.NeoPixel(board.D18, NUM_LEDS, brightness=BRIGHTNESS, auto_write=False)
+    pixels = neopixel.NeoPixel(board.D18, NUMLEDS, brightness=BRIGHTNESS, auto_write=False)
     stopPreset = False
     t1 = threading.Thread(target=preset, args=([280, 180, 165], (lambda: stopPreset),))
     t1.start()
@@ -66,18 +68,18 @@ def clientInputLoop(sock, fromaddr):
     while True:
         try:
             #read led data from the socket
-            clientData = sock.recv(24).decode('utf-8').strip() #expected format: 'type,R,G,B,Brightness'
+            clientData = sock.recv(24).decode('utf-8').strip() #expected format: 'type,R,G,B,Brightness[,names]'
             if clientData == '':
                 break
             dataSplit = clientData.split(',')
             #check if data is clean with no attempt to sanitize
-            if not is_clean(dataSplit):
+            if HOSTNAME not in dataSplit or not is_clean(dataSplit):
                 print('ignoring:', clientData)
                 continue
 
             #set brightness
-            if pixels.brightness != float(dataSplit[4])/(max(100, NUM_LEDS)*1.33):
-                pixels.brightness = float(dataSplit[4])/(max(100, NUM_LEDS)*1.33)
+            if pixels.brightness != float(dataSplit[4])/(max(100, NUMLEDS)*1.33):
+                pixels.brightness = float(dataSplit[4])/(max(100, NUMLEDS)*1.33)
                 print("Brighness="+str(pixels.brightness))
             #if the preset is running then stop it
             if t1 and t1.is_alive:
@@ -114,7 +116,7 @@ def clientInputLoop(sock, fromaddr):
     sock.close()
     
 from datetime import datetime
-logfile = open("setLeds.log", "w")
+logfile = open("setLeds.log", "a")
 logfile.write(str(datetime.now()))
 logfile.close()
 
