@@ -68,7 +68,7 @@ def clientInputLoop(sock, fromaddr):
     while True:
         try:
             #read led data from the socket
-            clientData = sock.recv(24).decode('utf-8').strip() #expected format: 'type,R,G,B,Brightness[,names]'
+            clientData = sock.recv(128).decode('utf-8').strip() #expected format: 'type,R,G,B,Brightness[,names]'
             if clientData == '':
                 break
             dataSplit = clientData.split(',')
