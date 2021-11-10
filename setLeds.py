@@ -54,7 +54,7 @@ def clientInputLoop(sock, fromaddr):
 
             offset += 0.002  # Bigger number = faster spin
     
-    ledconffile = open(".LedConsts.conf", "r")
+    ledconffile = open("/home/pi/.LedConsts.conf", "r")
     ledconfjson = json.loads(ledconffile.read())
     NUMLEDS = int(ledconfjson['NUMLEDS'])
     HOSTNAME = str(ledconfjson['HOSTNAME'])
@@ -87,7 +87,7 @@ def clientInputLoop(sock, fromaddr):
                 t1.join()
             if dataSplit[0] == 'preset':
                 stopPreset = False
-                t1 = threading.Thread(target=preset, args=(dataSplit[1:-1], (lambda: stopPreset),))
+                t1 = threading.Thread(target=preset, args=(dataSplit[1:4], (lambda: stopPreset),))
                 t1.start()
             elif dataSplit[0] == 'static':
                 pixels.fill((int(dataSplit[1]), int(dataSplit[2]), int(dataSplit[3])))
