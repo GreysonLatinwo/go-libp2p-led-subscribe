@@ -44,10 +44,10 @@ def clientInputLoop(sock, fromaddr):
         offset = 0  # Positional offset into color palette to get it to 'spin'
 
         while not stop_check():
-            for i in range(NUM_LEDS):
+            for i in range(NUMLEDS):
                 # Load each pixel's color from the palette using an offset, run it
                 # through the gamma function, pack RGB value and assign to pixel.
-                color = fancy.palette_lookup(palette, offset + i / NUM_LEDS)
+                color = fancy.palette_lookup(palette, offset + i / NUMLEDS)
                 color = fancy.gamma_adjust(color, brightness=1.0)
                 pixels[i] = color.pack()
             pixels.show()
