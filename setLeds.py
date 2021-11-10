@@ -1,7 +1,7 @@
 import json
-# import board
-# import neopixel
-# import adafruit_fancyled.adafruit_fancyled as fancy
+import board
+import neopixel
+import adafruit_fancyled.adafruit_fancyled as fancy
 import threading
 import socket
 
