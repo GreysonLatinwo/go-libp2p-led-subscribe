@@ -14,9 +14,9 @@ print("listening...")
 
 def clientInputLoop(sock, fromaddr):
     def is_clean(input_data_split):
-        if len(input_data_split) != 5:
+        if len(input_data_split) <= 5:
             return False
-        for data in input_data_split[1:]:
+        for data in input_data_split[1:5]:
             if not check_decimal(data):
                 return False
         return True
